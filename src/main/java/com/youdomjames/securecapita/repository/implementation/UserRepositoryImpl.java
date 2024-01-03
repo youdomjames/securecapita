@@ -15,12 +15,14 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.youdomjames.securecapita.enumeration.RoleType.*;
+import static com.youdomjames.securecapita.enumeration.RoleType.ROLE_USER;
+import static com.youdomjames.securecapita.enumeration.VerificationType.ACCOUNT;
 import static com.youdomjames.securecapita.query.UserQuery.*;
 import static java.util.Objects.requireNonNull;
 
@@ -35,28 +37,23 @@ public class UserRepositoryImpl implements UserRepository<User> {
 
     @Override
     public User create(User user) {
-        //check the email is unique
         if (getEmailCount(user.getEmail().trim().toLowerCase()) > 0) throw new ApiException("Email already in use. Please use a different email and try again.");
-        //save new user
         try{
             KeyHolder holder = new GeneratedKeyHolder();
             SqlParameterSource parameters = getSqlParameterSource(user);
             jdbc.update(INSERT_USER_QUERY, parameters, holder);
             user.setId(requireNonNull(holder.getKey()).longValue());
-            //Add role to the user
             roleRepository.addRoleToUser(user.getId(), ROLE_USER.name());
-            //send verification url
-            String verificationUrl = getVerificationUrl(UUID.randomUUID().toString(), )
-            //Save url in verification table
-            //Send email to user with verification Url
-            //Return the newly created User
-            //If any errors, throw exception with proper message
-        }catch (EmptyResultDataAccessException e ){
-
+            String verificationUrl = getVerificationUrl(UUID.randomUUID().toString(), ACCOUNT.getType());
+            jdbc.update(INSERT_VERIFICATION_QUERY, Map.of("userId", user.getId(), "url", verificationUrl));
+//            emailService.sendVerificationUrl(user.getFirstName(), user.getEmail(), verificationUrl, ACCOUNT);
+            user.setEnabled(false);
+            user.setNotLocked(true);
+            return user;
         }catch (Exception e){
-
+            log.error(e.getMessage());
+            throw new ApiException("An error occurred. Please try again.");
         }
-        return null;
     }
 
     @Override
@@ -90,5 +87,9 @@ public class UserRepositoryImpl implements UserRepository<User> {
                 .addValue("lastName", user.getLastName())
                 .addValue("email", user.getEmail())
                 .addValue("password", encoder.encode(user.getPassword()));
+    }
+
+    private String getVerificationUrl(String key, String type){
+        return ServletUriComponentsBuilder.fromCurrentContextPath().path("/user/verify/"+type+"/"+key).toUriString();
     }
 }
