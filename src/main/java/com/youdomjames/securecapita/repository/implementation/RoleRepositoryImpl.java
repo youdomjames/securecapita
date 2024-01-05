@@ -15,8 +15,8 @@ import java.util.Map;
 import java.util.Objects;
 
 import static com.youdomjames.securecapita.enumeration.RoleType.ROLE_USER;
-import static com.youdomjames.securecapita.query.RoleQuery.INSERT_ROLE_TO_USER_QUERY;
-import static com.youdomjames.securecapita.query.RoleQuery.SELECT_ROLE_BY_NAME_QUERY;
+import static com.youdomjames.securecapita.query.RoleQuery.*;
+import static java.util.Map.of;
 import static java.util.Objects.requireNonNull;
 
 @Slf4j
@@ -54,8 +54,8 @@ public class RoleRepositoryImpl implements RoleRepository<Role> {
     public void addRoleToUser(Long userId, String roleName) {
         log.info("Adding role {} to user id: {}", roleName, userId);
         try{
-            Role role = jdbc.queryForObject(SELECT_ROLE_BY_NAME_QUERY, Map.of("name", roleName), new RoleRowMapper());
-            jdbc.update(INSERT_ROLE_TO_USER_QUERY, Map.of("userId", userId, "roleId", requireNonNull(role).getId()));
+            Role role = jdbc.queryForObject(SELECT_ROLE_BY_NAME_QUERY, of("name", roleName), new RoleRowMapper());
+            jdbc.update(INSERT_ROLE_TO_USER_QUERY, of("userId", userId, "roleId", requireNonNull(role).getId()));
         }catch (EmptyResultDataAccessException e ){
             throw new ApiException("No role found by name: " + ROLE_USER.name());
         }catch (Exception e){
@@ -66,12 +66,28 @@ public class RoleRepositoryImpl implements RoleRepository<Role> {
 
     @Override
     public Role getRoleByUserId(Long userId) {
-        return null;
+        log.info("Get role by userId: {}", userId);
+        try{
+            return jdbc.queryForObject(SELECT_ROLE_BY_ID, of("id", userId), new RoleRowMapper());
+        }catch (EmptyResultDataAccessException e ){
+            throw new ApiException("No role found for userId: " + userId);
+        }catch (Exception e){
+            log.error(e.getMessage());
+            throw new ApiException("An error occurred. Please try again.");
+        }
     }
 
     @Override
     public Role getRoleByUserEmail(String email) {
-        return null;
+        log.info("Get role by email: {}", email);
+        try{
+            return jdbc.queryForObject(SELECT_ROLE_BY_EMAIL, of("email", email), new RoleRowMapper());
+        }catch (EmptyResultDataAccessException e ){
+            throw new ApiException("No role found for email: " + email);
+        }catch (Exception e){
+            log.error(e.getMessage());
+            throw new ApiException("An error occurred. Please try again.");
+        }
     }
 
     @Override

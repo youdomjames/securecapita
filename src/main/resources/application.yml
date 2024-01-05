@@ -1,14 +1,7 @@
 spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/securecapita
-    password: password
-    username: root
-  jpa:
-    generate-ddl: true
-    show-sql: true
-    hibernate:
-      ddl-auto: update
-  sql:
-    init:
-      mode: never
-      continue-on-error: false
+  profiles:
+    active: @spring.profiles.active@
+
+application:
+  title: SecureCapita
+  version: v1.0

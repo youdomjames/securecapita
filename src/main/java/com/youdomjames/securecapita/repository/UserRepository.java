@@ -1,6 +1,7 @@
 package com.youdomjames.securecapita.repository;
 
 import com.youdomjames.securecapita.domain.User;
+import com.youdomjames.securecapita.dto.UserDTO;
 
 import java.util.Collection;
 
@@ -14,4 +15,7 @@ public interface UserRepository <T extends User> {
     Boolean delete(Long id);
 
     /* More complex Operations */
+    User getUserByEmail(String email);
+
+    void sendVerificationCode(UserDTO user);
 }
