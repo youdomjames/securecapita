@@ -33,6 +33,5 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(out, httpResponse);
         out.flush();
-        out.close();
     }
 }

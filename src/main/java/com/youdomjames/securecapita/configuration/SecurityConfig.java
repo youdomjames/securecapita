@@ -1,5 +1,6 @@
 package com.youdomjames.securecapita.configuration;
 
+import com.youdomjames.securecapita.filter.CustomAuthorizationFilter;
 import com.youdomjames.securecapita.handler.CustomAccessDeniedHandler;
 import com.youdomjames.securecapita.handler.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
@@ -24,9 +26,11 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private static final String[] PUBLIC_URLS = {"/user/login/**", "/user/register/**"};
+    private static final String[] PUBLIC_URLS = {"/user/login/**", "/user/register/**", "/user/verify/code/**", "/user/reset/password/**",
+            "/user/verify/password/**", "/user/verify/account/**", "/user/refresh/token/**"};
     private final UserDetailsService userDetailsService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final CustomAuthorizationFilter customAuthorizationFilter;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private  final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
@@ -40,6 +44,7 @@ public class SecurityConfig {
         httpSecurity.authorizeHttpRequests(authorize -> authorize.requestMatchers(DELETE, "/customer/delete/**").hasAnyAuthority("DELETE:CUSTOMER"));
         httpSecurity.exceptionHandling(exception -> exception.accessDeniedHandler(customAccessDeniedHandler).authenticationEntryPoint(customAuthenticationEntryPoint));
         httpSecurity.authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated());
+        httpSecurity.addFilterBefore(customAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }
 
