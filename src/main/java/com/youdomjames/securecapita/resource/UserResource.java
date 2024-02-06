@@ -215,8 +215,8 @@ public class UserResource {
         return ResponseEntity.created(getUri()).body(
                 HttpResponse.builder()
                         .timeStamp(now().toString())
-//                        .data(of("user", user))
-                        .message("Verification code sent")
+                        .data(of("user", UserDTO.builder().email(user.getEmail()).phone(user.getPhone().substring(user.getPhone().length() - 4)).build()))
+                        .message("VERIFICATION_CODE_SENT")
                         .status(OK)
                         .statusCode(OK.value())
                         .build()
@@ -228,7 +228,6 @@ public class UserResource {
             Authentication authentication = authenticationManager.authenticate(unauthenticated(email, password));
             return authentication;
         } catch (Exception exception) {
-            processError(request, response, exception);
             throw new ApiException(exception.getMessage());
         }
     }

@@ -23,6 +23,7 @@ public class ExceptionUtils {
     public static void processError(HttpServletRequest request, HttpServletResponse response, Exception exception) {
         HttpResponse httpResponse;
         if (exception instanceof ApiException || exception instanceof DisabledException || exception instanceof LockedException || exception instanceof BadCredentialsException) {
+            System.out.println(exception.getMessage());
             httpResponse = getHttpResponse(response, exception.getMessage(), BAD_REQUEST);
         } else {
             httpResponse = getHttpResponse(response, "An error occurred. Please try again", INTERNAL_SERVER_ERROR);
